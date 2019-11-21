@@ -1,0 +1,4 @@
+#ifndef _CRYPTOLOGY_ESP32_LASER_H_
+#define _CRYPTOLOGY_ESP32_LASER_H_
+
+#endif
