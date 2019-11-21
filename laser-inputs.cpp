@@ -10,7 +10,7 @@ struct laser_input
 {
     bool clear;
     bool just_cleared;
-    bool just_obstructed;
+    bool just_tripped;
     int debounce;
 };
 typedef struct laser_input LASER_INPUT;
@@ -24,7 +24,7 @@ static bool s_overrides[MAX_LASERS];
 static void debounce_input(LASER_INPUT& laser_input, bool state)
 {
     laser_input.just_cleared = false;
-    laser_input.just_obstructed = false;
+    laser_input.just_tripped = false;
 
     if (state)
     {
@@ -42,7 +42,7 @@ static void debounce_input(LASER_INPUT& laser_input, bool state)
     }
     else if (laser_input.debounce == 0)
     {
-        laser_input.just_obstructed = laser_input.clear;
+        laser_input.just_tripped = laser_input.clear;
         laser_input.clear = false;
     }
 }
@@ -50,7 +50,7 @@ static void debounce_input(LASER_INPUT& laser_input, bool state)
 static void debounce_task_fn(TaskAction* this_task)
 {
     (void)this_task;
-    bool at_least_one_laser_obstructed = false;
+    bool at_least_one_laser_tripped = false;
 
     for (uint8_t i=0; i<MAX_LASERS; i++)
     {
@@ -62,13 +62,23 @@ static void debounce_task_fn(TaskAction* this_task)
         {
             s_laser_inputs[i].clear = true;
             s_laser_inputs[i].just_cleared = false;
-            s_laser_inputs[i].just_obstructed = false;
+            s_laser_inputs[i].just_tripped = false;
         }
 
-        at_least_one_laser_obstructed |= s_laser_inputs[i].clear = false;
+        at_least_one_laser_tripped |= s_laser_inputs[i].clear = false;
+
+        if (s_laser_inputs[i].just_cleared)
+        {
+            Serial.print("Input "); Serial.print(i); Serial.println(" cleared");
+        }
+        else if (s_laser_inputs[i].just_tripped)
+        {
+            Serial.print("Input "); Serial.print(i); Serial.println(" tripped");
+        }
+
     }
 
-    if (at_least_one_laser_obstructed)
+    if (at_least_one_laser_tripped)
     {
         application_set_laser_input_state(true);
     }
