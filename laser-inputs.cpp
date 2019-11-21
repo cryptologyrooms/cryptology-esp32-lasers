@@ -15,11 +15,11 @@ struct laser_input
 };
 typedef struct laser_input LASER_INPUT;
 
-static const uint8_t LASER_INPUT_PINS[MAX_LASERS] = {};
+static const uint8_t LASER_INPUT_PINS[MAX_LASERS] = {34, 35, 32, 33, 25, 26, 27, 14, 12};
 static LASER_INPUT s_laser_inputs[MAX_LASERS] = {0};
 
-/* Overrides are stored in flash, accessed by using EEPROM abstraction */
-static bool s_overrides[MAX_LASERS];
+/* Laser enabled sensors are stored in flash, accessed by using EEPROM abstraction */
+static bool s_sensor_enabled[MAX_LASERS];
 
 static void debounce_input(LASER_INPUT& laser_input, bool state)
 {
@@ -54,9 +54,9 @@ static void debounce_task_fn(TaskAction* this_task)
 
     for (uint8_t i=0; i<MAX_LASERS; i++)
     {
-        if (!s_overrides[i])
+        if (s_sensor_enabled[i])
         {
-            debounce_input(s_laser_inputs[i], digitalRead(LASER_INPUT_PINS[i])==LOW);
+            debounce_input(s_laser_inputs[i], digitalRead(LASER_INPUT_PINS[i])==HIGH);
         }
         else
         {
@@ -65,13 +65,13 @@ static void debounce_task_fn(TaskAction* this_task)
             s_laser_inputs[i].just_tripped = false;
         }
 
-        at_least_one_laser_tripped |= s_laser_inputs[i].clear = false;
+        at_least_one_laser_tripped |= (s_laser_inputs[i].clear == false);
 
         if (s_laser_inputs[i].just_cleared)
         {
             Serial.print("Input "); Serial.print(i); Serial.println(" cleared");
         }
-        else if (s_laser_inputs[i].just_tripped)
+        if (s_laser_inputs[i].just_tripped)
         {
             Serial.print("Input "); Serial.print(i); Serial.println(" tripped");
         }
@@ -83,42 +83,52 @@ static void debounce_task_fn(TaskAction* this_task)
         application_set_laser_input_state(true);
     }
 }
-static TaskAction s_debounce_task(debounce_task_fn, 10, NULL);
+static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);
+
+static void debug_task_fn(TaskAction* this_task)
+{
+    (void)this_task;
+    Serial.println("Lasers: ");
+    for (uint8_t i=0; i<MAX_LASERS; i++)
+    {
+        Serial.print(s_laser_inputs[i].clear ? "1," : "0,");
+    }
+    Serial.println("");
+}
+static TaskAction s_debug_task(debug_task_fn, 750, INFINITE_TICKS);
 
 void laser_input_setup()
 {
-    Serial.print("Overrides: ");
+    Serial.print("Enabled sensors: ");
     for(uint8_t i=0; i<MAX_LASERS; i++)
     {
-        pinMode(LASER_INPUT_PINS[i], INPUT);
-        s_overrides[i] = EEPROM.read(i);
-        Serial.print(s_overrides[i] ? "1," : "0,");
+        pinMode(LASER_INPUT_PINS[i], INPUT_PULLUP);
+        s_sensor_enabled[i] = EEPROM.read(i);
+        Serial.print(s_sensor_enabled[i] ? "1," : "0,");
     }
     Serial.println("");
 }
 
 void laser_input_loop()
 {
-    if (!application_in_laser_off_time())
-    {
-        s_debounce_task.tick();
-    }
+    s_debounce_task.tick();
+    s_debug_task.tick();
 }
 
-void laser_input_get_overrides(bool * overrides)
+void laser_input_get_enabled_sensors(bool * enabled_sensors)
 {
-    if (overrides)
+    if (enabled_sensors)
     {
-        memcpy(overrides, s_overrides, sizeof(s_overrides));
+        memcpy(enabled_sensors, s_sensor_enabled, sizeof(s_sensor_enabled));
     }
 }
 
-void laser_input_toggle_override(uint8_t i)
+void laser_input_toggle_sensor_enable(uint8_t i)
 {
     if (i < MAX_LASERS)
     {
-        s_overrides[i] = !s_overrides[i];
-        EEPROM.write(i, s_overrides[i]);
+        s_sensor_enabled[i] = !s_sensor_enabled[i];
+        EEPROM.write(i, s_sensor_enabled[i]);
         EEPROM.commit();
     }
 }

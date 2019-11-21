@@ -9,33 +9,12 @@
 #include "serial-handler.h"
 #include "server.h"
 #include "io.h"
+#include "application.h"
 
 static hw_timer_t *timer = NULL;
 
-static const unsigned long LASER_OFF_TIME = 500UL;
-static unsigned long s_laser_trip_time = 0UL;
-
 void IRAM_ATTR resetModule() {
     esp_restart();
-}
-
-void application_set_laser_input_state(bool tripped)
-{
-    io_lasers_enable(!tripped);
-    if (tripped)
-    {
-        s_laser_trip_time = millis();
-    }
-}
-
-bool application_in_laser_off_time()
-{
-    return (millis() - s_laser_trip_time) > LASER_OFF_TIME;
-}
-
-void application_handle_security_switch_press()
-{
-    
 }
 
 void setup()
@@ -54,8 +33,6 @@ void setup()
     timerAttachInterrupt(timer, &resetModule, true);
     timerAlarmWrite(timer, 20000 * 1000, false);
     timerAlarmEnable(timer);
-
-
 }
 
 void loop()
@@ -64,6 +41,7 @@ void loop()
     wifi_control_loop();
     serial_loop();
     server_loop();
+    application_loop();
 
     if (wifi_control_check_and_clear())
     {
@@ -73,11 +51,6 @@ void loop()
         Serial.println("Restarting...");
         ESP.restart();
         delay(1000);
-    }
-
-    if (!application_in_laser_off_time())
-    {
-        io_lasers_enable(true);
     }
 
     timerWrite(timer, 0);

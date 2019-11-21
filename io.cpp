@@ -4,9 +4,9 @@
 #include "io.h"
 #include "application.h"
 
-#define LASER_CONTROL_PIN -1
-#define SECURITY_ENABLE_PIN -1
-#define LOCK_DISPLAY_CONTROL_PIN -1
+#define SECURITY_ENABLE_PIN 19
+#define LASER_CONTROL_PIN 18
+#define LOCK_DISPLAY_CONTROL_PIN 5
 
 static const int DEBOUNCE_COUNT = 5;
 
@@ -59,7 +59,7 @@ static void debounce_task_fn(TaskAction* this_task)
         application_handle_security_switch_press();
     }
 }
-static TaskAction s_debounce_task(debounce_task_fn, 10, NULL);
+static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);
 
 void io_setup(void)
 {

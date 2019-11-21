@@ -33,10 +33,10 @@ static const char * OFF_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button cl
 
 static char s_buffer[2048];
 
-static void add_laser_status_html(String& s, uint8_t laser_index, bool override_is_on)
+static void add_laser_status_html(String& s, uint8_t laser_index, bool sensor_is_on)
 {
     char buffer[96];
-    if (override_is_on)
+    if (sensor_is_on)
     {
         sprintf(buffer, ON_BUTTON_TEMPLATE, laser_index, laser_index+1);
     }
@@ -61,14 +61,14 @@ static void print_args(WebServer& server)
 
 void render_page(bool refresh)
 {
-    bool laser_overrides[MAX_LASERS];
+    bool sensor_is_enabled[MAX_LASERS];
     String laser_status_html = "";
 
-    laser_input_get_overrides(laser_overrides);
+    laser_input_get_enabled_sensors(sensor_is_enabled);
 
     for (uint8_t i=0; i<MAX_LASERS; i++)
     {
-        add_laser_status_html(laser_status_html, i, laser_overrides[i]);
+        add_laser_status_html(laser_status_html, i, sensor_is_enabled[i]);
     }
 
     sprintf(s_buffer, "%s%s%s%s%s",
@@ -90,7 +90,7 @@ void handle_index()
         if ((laser_n >= 0) && (laser_n < MAX_LASERS))
         {
             Serial.print("Toggling laser "); Serial.print(laser_n); Serial.println("");
-            laser_input_toggle_override(laser_n);
+            laser_input_toggle_sensor_enable(laser_n);
         }
         else
         {
