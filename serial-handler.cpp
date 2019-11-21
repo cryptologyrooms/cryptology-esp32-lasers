@@ -1,16 +1,13 @@
 #include <Arduino.h>
 
-#include <fixed-length-accumulator.h>
-
-static void handle_complete_buffer(FixedLengthAccumulator& buffer)
+static void handle_complete_buffer(String& buffer)
 {
     (void)buffer;
 }
 
 void serial_loop()
 {
-    static char s_incoming[128];
-    static FixedLengthAccumulator s_in_buffer(s_incoming, 128);
+    static String s_in_buffer;
 
     char c;
     while(Serial.available())
@@ -18,12 +15,12 @@ void serial_loop()
         c = Serial.read();
         if (c != '\n')
         {
-            s_in_buffer.writeChar(c);
+            s_in_buffer += c;
         }
         else
         {
             handle_complete_buffer(s_in_buffer);
-            s_in_buffer.reset();
+            s_in_buffer = "";
         }
     }
 }

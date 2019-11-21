@@ -90,6 +90,7 @@ void handle_index()
         if ((laser_n >= 0) && (laser_n < MAX_LASERS))
         {
             Serial.print("Toggling laser "); Serial.print(laser_n); Serial.println("");
+            laser_input_toggle_override(laser_n);
         }
         else
         {

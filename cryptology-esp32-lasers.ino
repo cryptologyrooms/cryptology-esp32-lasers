@@ -8,19 +8,34 @@
 #include "serial-handler.h"
 #include "server.h"
 
+#define LASER_CONTROL_PIN -1
+
+static const unsigned long LASER_OFF_TIME = 500UL;
 
 static hw_timer_t *timer = NULL;
-
-static void led_task_fn(TaskAction* pTask)
-{
-    (void)pTask;
-    static bool s_led = false;
-    digitalWrite(5, s_led = !s_led);
-}
-static TaskAction s_led_task(led_task_fn, 500, INFINITE_TICKS);
+static unsigned long s_laser_trip_time = 0UL;
 
 void IRAM_ATTR resetModule() {
     esp_restart();
+}
+
+static void lasers_enable(bool enable)
+{
+    digitalWrite(LASER_CONTROL_PIN, enable ? HIGH : LOW);
+}
+
+void application_set_laser_input_state(bool tripped)
+{
+    lasers_enable(!tripped);
+    if (tripped)
+    {
+        s_laser_trip_time = millis();
+    }
+}
+
+bool application_in_laser_off_time()
+{
+    return (millis() - s_laser_trip_time) > LASER_OFF_TIME;
 }
 
 void setup()
@@ -28,8 +43,6 @@ void setup()
     Serial.begin(115200);
     Serial.setDebugOutput(true);
     esp_log_level_set("*", ESP_LOG_VERBOSE);
-
-    pinMode(5, OUTPUT);
 
     wifi_control_setup();
     app_wifi_setup();
@@ -39,6 +52,9 @@ void setup()
     timerAttachInterrupt(timer, &resetModule, true);
     timerAlarmWrite(timer, 20000 * 1000, false);
     timerAlarmEnable(timer);
+
+    pinMode(LASER_CONTROL_PIN, OUTPUT);
+
 }
 
 void loop()
@@ -58,7 +74,10 @@ void loop()
         delay(1000);
     }
 
-    s_led_task.tick();
+    if (!application_in_laser_off_time())
+    {
+        lasers_enable(true);
+    }
 
     timerWrite(timer, 0);
 }

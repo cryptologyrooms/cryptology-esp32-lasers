@@ -5,7 +5,7 @@
 
 void laser_input_setup();
 void laser_input_loop();
-bool laser_input_check_and_clear();
 void laser_input_get_overrides(bool * overrides);
+void laser_input_toggle_override(uint8_t i);
 
 #endif
