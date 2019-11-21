@@ -87,11 +87,14 @@ static TaskAction s_debounce_task(debounce_task_fn, 10, NULL);
 
 void laser_input_setup()
 {
+    Serial.print("Overrides: ");
     for(uint8_t i=0; i<MAX_LASERS; i++)
     {
         pinMode(LASER_INPUT_PINS[i], INPUT);
         s_overrides[i] = EEPROM.read(i);
+        Serial.print(s_overrides[i] ? "1," : "0,");
     }
+    Serial.println("");
 }
 
 void laser_input_loop()
