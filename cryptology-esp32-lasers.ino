@@ -6,6 +6,8 @@
 #include "laser-inputs.h"
 #include "wifi-control.h"
 #include "serial-handler.h"
+#include "server.h"
+
 
 static hw_timer_t *timer = NULL;
 
@@ -44,7 +46,8 @@ void loop()
     laser_input_loop();
     wifi_control_loop();
     serial_loop();
-    
+    server_loop();
+
     if (wifi_control_check_and_clear())
     {
         Serial.println("Clearing WiFi credentials");

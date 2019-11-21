@@ -3,6 +3,8 @@
 #include <WebServer.h>
 #include <WiFiManager.h>
 
+#include "server.h"
+
 static WiFiManager s_wifiManager;
 
 static void onAccessPointCallback(WiFiManager * pManager)
@@ -24,6 +26,8 @@ void app_wifi_setup()
   Serial.print(WiFi.SSID());
   Serial.print(" as ");
   Serial.println(WiFi.localIP());
+
+  server_start();
 }
 
 void app_wifi_wipe_credentials()
