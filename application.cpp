@@ -21,16 +21,17 @@ void application_loop()
     {
         io_lasers_enable(true);
     }
-
+    
     io_set_locked_display(s_tripped);
+    io_set_maglock(s_tripped);
 }
 
 void application_set_laser_input_state(bool tripped)
 {
-	s_tripped = tripped;
-    io_lasers_enable(!tripped);
     if (tripped)
     {
+        s_tripped = true;
+        io_lasers_enable(false);
         s_laser_trip_time = millis();
     }
 }
@@ -43,5 +44,4 @@ bool application_in_laser_off_time()
 void application_handle_security_switch_press()
 {
     s_tripped = false;
-
 }

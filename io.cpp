@@ -7,6 +7,7 @@
 #define SECURITY_ENABLE_PIN 19
 #define LASER_CONTROL_PIN 18
 #define LOCK_DISPLAY_CONTROL_PIN 5
+#define MAGLOCK_CONTROL_PIN 5
 
 static const int DEBOUNCE_COUNT = 5;
 
@@ -80,4 +81,9 @@ void io_lasers_enable(bool enable)
 void io_set_locked_display(bool enable)
 {
     digitalWrite(LOCK_DISPLAY_CONTROL_PIN, enable ? HIGH : LOW);    
+}
+
+void io_set_maglock(bool enable)
+{
+    digitalWrite(MAGLOCK_CONTROL_PIN, enable ? HIGH : LOW);    
 }
