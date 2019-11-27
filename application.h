@@ -3,7 +3,7 @@
 
 void application_loop();
 
-void application_set_laser_input_state(bool tripped);
+void application_set_laser_tripped();
 bool application_in_laser_off_time();
 
 void application_handle_security_switch_press();

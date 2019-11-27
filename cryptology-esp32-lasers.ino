@@ -29,6 +29,10 @@ void setup()
     laser_input_setup();
     io_setup();
 
+    io_lasers_enable(true);
+
+    delay(3000);
+
     timer = timerBegin(0, 80, true);
     timerAttachInterrupt(timer, &resetModule, true);
     timerAlarmWrite(timer, 20000 * 1000, false);
@@ -42,7 +46,8 @@ void loop()
     serial_loop();
     server_loop();
     application_loop();
-
+    io_loop();
+    
     if (wifi_control_check_and_clear())
     {
         Serial.println("Clearing WiFi credentials");

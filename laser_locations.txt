@@ -1,0 +1,8 @@
+Input 0: "Leftmost"
+Input 1: "Right of leftmost"
+Input 2: "Far low"
+Input 3: "High Double"
+Input 4: "Last"
+Input 5: "Penultimate Middle"
+Input 6: "Low"
+Input 7: "End Middle"

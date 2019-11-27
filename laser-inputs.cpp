@@ -8,7 +8,7 @@ static const int DEBOUNCE_COUNT = 5;
 
 struct laser_input
 {
-    bool clear;
+    bool tripped;
     bool just_cleared;
     bool just_tripped;
     int debounce;
@@ -37,13 +37,13 @@ static void debounce_input(LASER_INPUT& laser_input, bool state)
 
     if (laser_input.debounce == DEBOUNCE_COUNT)
     {
-        laser_input.just_cleared = !laser_input.clear;
-        laser_input.clear = true;
+        laser_input.just_tripped = !laser_input.tripped;
+        laser_input.tripped = true;
     }
     else if (laser_input.debounce == 0)
     {
-        laser_input.just_tripped = laser_input.clear;
-        laser_input.clear = false;
+        laser_input.just_cleared = laser_input.tripped;
+        laser_input.tripped = false;
     }
 }
 
@@ -56,16 +56,16 @@ static void debounce_task_fn(TaskAction* this_task)
     {
         if (s_sensor_enabled[i])
         {
-            debounce_input(s_laser_inputs[i], digitalRead(LASER_INPUT_PINS[i])==HIGH);
+            debounce_input(s_laser_inputs[i], digitalRead(LASER_INPUT_PINS[i])==LOW);
         }
         else
         {
-            s_laser_inputs[i].clear = true;
+            s_laser_inputs[i].tripped = false;
             s_laser_inputs[i].just_cleared = false;
             s_laser_inputs[i].just_tripped = false;
         }
 
-        at_least_one_laser_tripped |= (s_laser_inputs[i].clear == false);
+        at_least_one_laser_tripped |= (s_laser_inputs[i].tripped == true);
 
         if (s_laser_inputs[i].just_cleared)
         {
@@ -75,12 +75,12 @@ static void debounce_task_fn(TaskAction* this_task)
         {
             Serial.print("Input "); Serial.print(i); Serial.println(" tripped");
         }
-
     }
 
     if (at_least_one_laser_tripped)
     {
-        application_set_laser_input_state(true);
+        Serial.println("Laser tripped!");
+        application_set_laser_tripped();
     }
 }
 static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);
@@ -88,10 +88,10 @@ static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);
 static void debug_task_fn(TaskAction* this_task)
 {
     (void)this_task;
-    Serial.println("Lasers: ");
+    Serial.print("Lasers: ");
     for (uint8_t i=0; i<MAX_LASERS; i++)
     {
-        Serial.print(s_laser_inputs[i].clear ? "1," : "0,");
+        Serial.print(s_laser_inputs[i].tripped ? "1," : "0,");
     }
     Serial.println("");
 }
@@ -105,13 +105,30 @@ void laser_input_setup()
         pinMode(LASER_INPUT_PINS[i], INPUT_PULLUP);
         s_sensor_enabled[i] = EEPROM.read(i);
         Serial.print(s_sensor_enabled[i] ? "1," : "0,");
+        s_laser_inputs[i].tripped = false;
+        s_laser_inputs[i].just_tripped = false;
+        s_laser_inputs[i].just_cleared = false;
+           
     }
     Serial.println("");
 }
 
+void laser_input_reset_debounce()
+{
+    for(uint8_t i=0; i<MAX_LASERS; i++)
+    {
+        s_laser_inputs[i].tripped = false;
+        s_laser_inputs[i].just_tripped = false;
+        s_laser_inputs[i].just_cleared = false;       
+    }
+}
+
 void laser_input_loop()
 {
-    s_debounce_task.tick();
+    if (!application_in_laser_off_time())
+    {
+        s_debounce_task.tick();        
+    }
     s_debug_task.tick();
 }
 

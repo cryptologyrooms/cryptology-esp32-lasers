@@ -4,10 +4,11 @@
 #include "io.h"
 #include "application.h"
 
-#define SECURITY_ENABLE_PIN 19
-#define LASER_CONTROL_PIN 18
-#define LOCK_DISPLAY_CONTROL_PIN 5
-#define MAGLOCK_CONTROL_PIN 5
+#define SECURITY_ENABLE_PIN 15
+
+#define LOCK_DISPLAY_CONTROL_PIN 0
+#define MAGLOCK_CONTROL_PIN 4
+#define LASER_CONTROL_PIN 16
 
 static const int DEBOUNCE_COUNT = 5;
 
@@ -65,6 +66,8 @@ static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);
 void io_setup(void)
 {
     pinMode(LASER_CONTROL_PIN, OUTPUT);
+    pinMode(LOCK_DISPLAY_CONTROL_PIN, OUTPUT);
+    pinMode(MAGLOCK_CONTROL_PIN, OUTPUT);
     pinMode(SECURITY_ENABLE_PIN, INPUT_PULLUP);
 }
 
@@ -75,15 +78,15 @@ void io_loop()
 
 void io_lasers_enable(bool enable)
 {
-    digitalWrite(LASER_CONTROL_PIN, enable ? HIGH : LOW);
+    digitalWrite(LASER_CONTROL_PIN, enable ? LOW: HIGH);
 }
 
 void io_set_locked_display(bool enable)
 {
-    digitalWrite(LOCK_DISPLAY_CONTROL_PIN, enable ? HIGH : LOW);    
+    digitalWrite(LOCK_DISPLAY_CONTROL_PIN, enable ? HIGH : LOW);
 }
 
 void io_set_maglock(bool enable)
 {
-    digitalWrite(MAGLOCK_CONTROL_PIN, enable ? HIGH : LOW);    
+    digitalWrite(MAGLOCK_CONTROL_PIN, enable ? LOW : HIGH);
 }
