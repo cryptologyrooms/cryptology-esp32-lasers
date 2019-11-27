@@ -111,6 +111,7 @@ void laser_input_setup()
            
     }
     Serial.println("");
+    s_debounce_task.Enable(true);
 }
 
 void laser_input_reset_debounce()
@@ -125,10 +126,7 @@ void laser_input_reset_debounce()
 
 void laser_input_loop()
 {
-    if (!application_in_laser_off_time())
-    {
-        s_debounce_task.tick();        
-    }
+    s_debounce_task.tick();        
     s_debug_task.tick();
 }
 
@@ -148,4 +146,10 @@ void laser_input_toggle_sensor_enable(uint8_t i)
         EEPROM.write(i, s_sensor_enabled[i]);
         EEPROM.commit();
     }
+}
+
+void laser_input_global_enable(bool enable)
+{
+    s_debounce_task.Enable(enable);
+    laser_input_reset_debounce();
 }

@@ -23,6 +23,7 @@ void application_loop()
         Serial.println("Re-enable lasers");
         s_lasers_off = false;
         io_lasers_enable(true);
+        laser_input_global_enable(true);
     }
     
     io_set_locked_display(s_tripped);
@@ -33,6 +34,7 @@ void application_set_laser_tripped()
 {
     s_tripped = true;
     io_lasers_enable(false);
+    laser_input_global_enable(false);
     s_lasers_off = true;
     s_laser_trip_time = millis();
 }
