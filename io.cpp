@@ -88,5 +88,5 @@ void io_set_locked_display(bool enable)
 
 void io_set_maglock(bool enable)
 {
-    digitalWrite(MAGLOCK_CONTROL_PIN, enable ? LOW : HIGH);
+    digitalWrite(MAGLOCK_CONTROL_PIN, enable ? HIGH : LOW);
 }

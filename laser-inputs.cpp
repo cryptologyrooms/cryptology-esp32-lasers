@@ -118,9 +118,10 @@ void laser_input_reset_debounce()
 {
     for(uint8_t i=0; i<MAX_LASERS; i++)
     {
+        s_laser_inputs[i].debounce = 0;
         s_laser_inputs[i].tripped = false;
         s_laser_inputs[i].just_tripped = false;
-        s_laser_inputs[i].just_cleared = false;       
+        s_laser_inputs[i].just_cleared = false;
     }
 }
 
@@ -148,8 +149,22 @@ void laser_input_toggle_sensor_enable(uint8_t i)
     }
 }
 
+static bool task_enabled = true;
 void laser_input_global_enable(bool enable)
-{
-    s_debounce_task.Enable(enable);
-    laser_input_reset_debounce();
+{ 
+    if (enable != task_enabled)
+    {
+        if (enable)
+        {
+            Serial.println("Enabling sensors");
+        }
+        else
+        {
+            Serial.println("Disabling sensors");            
+        }
+        
+        task_enabled = enable;
+        s_debounce_task.Enable(enable);
+        laser_input_reset_debounce();
+    }
 }

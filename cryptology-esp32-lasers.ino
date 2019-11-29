@@ -5,6 +5,7 @@
 
 #include "app-wifi.h"
 #include "laser-inputs.h"
+#include "laser-control.h"
 #include "wifi-control.h"
 #include "serial-handler.h"
 #include "server.h"
@@ -29,7 +30,7 @@ void setup()
     laser_input_setup();
     io_setup();
 
-    io_lasers_enable(true);
+    laser_control_set_lasers(true);
 
     delay(3000);
 
