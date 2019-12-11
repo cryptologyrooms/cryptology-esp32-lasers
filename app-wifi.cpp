@@ -7,6 +7,12 @@
 
 static WiFiManager s_wifiManager;
 
+static IPAddress local_ip(192, 168, 1, 21);
+static IPAddress gateway(192, 168, 1, 1);
+static IPAddress subnet(255, 255, 255, 0);
+static IPAddress dns(192, 168, 1, 10);
+
+
 static void onAccessPointCallback(WiFiManager * pManager)
 {
   (void)pManager;
@@ -19,6 +25,7 @@ static void onAccessPointCallback(WiFiManager * pManager)
 void app_wifi_setup()
 {
   s_wifiManager.setAPCallback(onAccessPointCallback);
+  s_wifiManager.setSTAStaticIPConfig(local_ip, gateway, subnet);
 
   s_wifiManager.autoConnect("Cryptology-Laser-AP");
 
