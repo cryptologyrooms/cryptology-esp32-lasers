@@ -31,8 +31,8 @@ static char const * const HTML_TEMPLATES[] = {\
 "</html>"
 };
 
-static const char * ON_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button class=\"button green\">Laser %d</button></a></p>";
-static const char * OFF_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button class=\"button red\">Laser %d</button></a></p>";
+static const char * ON_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button class=\"button green\">%d: %s</button></a></p>";
+static const char * OFF_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button class=\"button red\">%d: %s</button></a></p>";
 
 static char s_buffer[2048];
 
@@ -44,14 +44,27 @@ static const char * expected_json_keys[] = {
 
 static void add_laser_status_html(String& s, uint8_t laser_index, bool sensor_is_on)
 {
-    char buffer[96];
+    static char * laser_names[] = 
+    {
+        "Leftmost",
+        "Right of leftmost",
+        "Far low",
+        "High Double",
+        "Last",
+        "Penultimate Middle",
+        "Low",
+        "End Middle",
+        "Unused",
+    };
+
+    char buffer[128];
     if (sensor_is_on)
     {
-        sprintf(buffer, ON_BUTTON_TEMPLATE, laser_index, laser_index+1);
+        sprintf(buffer, ON_BUTTON_TEMPLATE, laser_index, laser_index+1, laser_names[laser_index]);
     }
     else
     {
-        sprintf(buffer, OFF_BUTTON_TEMPLATE, laser_index, laser_index+1);
+        sprintf(buffer, OFF_BUTTON_TEMPLATE, laser_index, laser_index+1, laser_names[laser_index]);
     }
 
     s += buffer;
