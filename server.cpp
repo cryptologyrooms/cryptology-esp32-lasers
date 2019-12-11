@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 
 #include "laser-inputs.h"
+#include "server.h"
 
 static WebServer s_server(80);
 static char const * const HTML_TEMPLATES[] = {\
@@ -169,9 +170,11 @@ void server_push_event(eEvent event, uint8_t param)
     switch(event)
     {
     case eEvent_LaserTrip:
-        char laser_event[3] = "L0";
-        laser_event[1] = '0' + param;
-        doc["event"] = laser_event;
+        {
+            static char laser_event[3] = "L0";
+            laser_event[1] = '0' + param;
+            doc["event"] = laser_event;
+        }
         break;
     case eEvent_Button:
         doc["event"] = "LS";
