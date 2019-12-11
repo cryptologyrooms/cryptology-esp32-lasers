@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <ArduinoJson.h>
 
 #include "laser-inputs.h"
 
@@ -33,6 +34,12 @@ static const char * OFF_BUTTON_TEMPLATE = "<p><a href=\"/index?n=%d\"><button cl
 
 static char s_buffer[2048];
 
+static const char * expected_json_keys[] = { 
+    "sensor0", "sensor1", "sensor2", "sensor3",
+    "sensor4", "sensor5", "sensor6", "sensor7",
+    "sensor8"
+};
+
 static void add_laser_status_html(String& s, uint8_t laser_index, bool sensor_is_on)
 {
     char buffer[96];
@@ -59,6 +66,12 @@ static void print_args(WebServer& server)
     Serial.println(dbg);
 }
 
+static void print_data(WebServer& server)
+{
+    Serial.print("Got POST data:");
+    Serial.println(server.arg("plain"));
+}
+
 void render_page(bool refresh)
 {
     bool sensor_is_enabled[MAX_LASERS];
@@ -78,6 +91,10 @@ void render_page(bool refresh)
         laser_status_html.c_str(),
         HTML_TEMPLATES[3]
     );
+}
+
+void returnOK() {
+  s_server.send(200, "text/plain", "");
 }
 
 void handle_index()
@@ -103,9 +120,39 @@ void handle_index()
     s_server.send(200, "text/html", s_buffer);
 }
 
+void handle_setsensors()
+{
+    print_data(s_server);
+    StaticJsonDocument<96> doc;
+    DeserializationError err = deserializeJson(doc, s_server.arg("plain"));
+    
+    if (err)
+    {
+        Serial.print(F("deserializeJson() failed with code "));
+        Serial.println(err.c_str());
+        return;
+    }
+
+    for(int i=0; i<8; i++)
+    {
+        String value = doc[expected_json_keys[i]];
+        if (value == "on")
+        {
+            Serial.print("Activating sensor "); Serial.println(i);
+            laser_input_set_sensor_enable(i, true);
+        }
+        else if (value == "off")
+        {
+            Serial.print("Deactivating sensor "); Serial.println(i);
+            laser_input_set_sensor_enable(i, false);
+        }
+    }
+}
+
 void server_start()
 {
-    s_server.on("/index", handle_index);
+    s_server.on("/index", HTTP_GET, handle_index);
+    s_server.on("/setsensors", HTTP_POST, handle_setsensors);
     s_server.begin();
 }
 

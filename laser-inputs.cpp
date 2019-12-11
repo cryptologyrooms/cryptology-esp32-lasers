@@ -139,13 +139,21 @@ void laser_input_get_enabled_sensors(bool * enabled_sensors)
     }
 }
 
+void laser_input_set_sensor_enable(uint8_t i, bool en)
+{
+    if (i < MAX_LASERS)
+    {
+        s_sensor_enabled[i] = en;
+        EEPROM.write(i, s_sensor_enabled[i]);
+        EEPROM.commit();
+    }
+}
+
 void laser_input_toggle_sensor_enable(uint8_t i)
 {
     if (i < MAX_LASERS)
     {
-        s_sensor_enabled[i] = !s_sensor_enabled[i];
-        EEPROM.write(i, s_sensor_enabled[i]);
-        EEPROM.commit();
+        laser_input_set_sensor_enable(i, !s_sensor_enabled[i]);
     }
 }
 
