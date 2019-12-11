@@ -1,6 +1,7 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <HTTPClient.h>
 #include <ArduinoJson.h>
 
 #include "laser-inputs.h"
@@ -159,4 +160,33 @@ void server_start()
 void server_loop()
 {
     s_server.handleClient();
+}
+
+void server_push_event(eEvent event, uint8_t param)
+{
+    StaticJsonDocument<96> doc;
+
+    switch(event)
+    {
+    case eEvent_LaserTrip:
+        char laser_event[3] = "L0";
+        laser_event[1] = '0' + param;
+        doc["event"] = laser_event;
+        break;
+    case eEvent_Button:
+        doc["event"] = "LS";
+        break;
+    }
+
+    {
+        char json[32];
+        serializeJson(doc, json);
+
+        Serial.print("JSON event: "); Serial.println(json);
+        HTTPClient http;
+        http.begin("http://<IP_ADDRESS>/<url.php>");
+        http.addHeader("Content-Type", "application/json");
+        int resp = http.POST(json);
+        Serial.print("Response: "); Serial.println(resp);
+    }
 }
