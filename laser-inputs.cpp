@@ -69,11 +69,11 @@ static void debounce_task_fn(TaskAction* this_task)
 
         if (s_laser_inputs[i].just_cleared)
         {
-            Serial.print("Input "); Serial.print(i); Serial.println(" cleared");
+            Serial.print("Laser "); Serial.print(i+1); Serial.println(" cleared");
         }
         if (s_laser_inputs[i].just_tripped)
         {
-            Serial.print("Input "); Serial.print(i); Serial.println(" tripped");
+            Serial.print("Laser "); Serial.print(i+1); Serial.println(" tripped");
         }
     }
 
