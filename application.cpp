@@ -24,13 +24,20 @@ void application_loop()
     );
 }
 
-void application_set_laser_tripped()
+void application_set_laser_tripped(uint8_t laser)
 {
     laser_control_set_lasers(false);
+
+    if (!s_tripped)
+    {
+    	server_push_event(eEvent_LaserTrip, laser);
+    }
+
     s_tripped = true;
 }
 
 void application_handle_security_switch_press()
 {
+	server_push_event(eEvent_Button, 0);
     s_tripped = false;
 }

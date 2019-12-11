@@ -51,7 +51,7 @@ static void debounce_task_fn(TaskAction* this_task)
 {
     (void)this_task;
     bool at_least_one_laser_tripped = false;
-
+    uint8_t first_tripped_laser = 0xFF;
     for (uint8_t i=0; i<MAX_LASERS; i++)
     {
         if (s_sensor_enabled[i])
@@ -73,6 +73,7 @@ static void debounce_task_fn(TaskAction* this_task)
         }
         if (s_laser_inputs[i].just_tripped)
         {
+            if (first_tripped_laser == 0xFF) { first_tripped_laser = i; }
             Serial.print("Laser "); Serial.print(i+1); Serial.println(" tripped");
         }
     }
@@ -80,7 +81,7 @@ static void debounce_task_fn(TaskAction* this_task)
     if (at_least_one_laser_tripped)
     {
         Serial.println("Laser tripped!");
-        application_set_laser_tripped();
+        application_set_laser_tripped(first_tripped_laser);
     }
 }
 static TaskAction s_debounce_task(debounce_task_fn, 10, INFINITE_TICKS);

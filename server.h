@@ -10,6 +10,8 @@ typedef enum _eEvent
 void server_start();
 void server_loop();
 
+void server_test_connection();
+
 void server_push_event(eEvent event, uint8_t param);
 
 #endif

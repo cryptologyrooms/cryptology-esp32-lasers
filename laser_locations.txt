@@ -7,3 +7,6 @@ Input 6: "Penultimate Middle"
 Input 7: "Low"
 Input 8: "End Middle"
 Input 9: Unused
+
+Gateway: 192.168.1.1
+DNS:  192.168.1.10

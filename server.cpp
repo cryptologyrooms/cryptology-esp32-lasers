@@ -165,31 +165,36 @@ void server_loop()
 
 void server_push_event(eEvent event, uint8_t param)
 {
-    StaticJsonDocument<96> doc;
-
+    static char event_encoded[] = "option=LX";
     switch(event)
     {
     case eEvent_LaserTrip:
         {
-            static char laser_event[3] = "L0";
-            laser_event[1] = '0' + param;
-            doc["event"] = laser_event;
+            event_encoded[8] = '1' + param;
         }
         break;
     case eEvent_Button:
-        doc["event"] = "LS";
+        event_encoded[8] = 'S';
         break;
     }
 
     {
-        char json[32];
-        serializeJson(doc, json);
-
-        Serial.print("JSON event: "); Serial.println(json);
+        Serial.print("Event: "); Serial.println(event_encoded);
         HTTPClient http;
-        http.begin("http://<IP_ADDRESS>/<url.php>");
-        http.addHeader("Content-Type", "application/json");
-        int resp = http.POST(json);
+        http.begin("http://cryptology.net/writeEventLaser.php");
+        //http.addHeader("Content-Type", "application/json");
+        http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        int resp = http.POST(event_encoded);
         Serial.print("Response: "); Serial.println(resp);
     }
+}
+
+void server_test_connection()
+{
+    HTTPClient http;
+    http.begin("http://cryptology.net/test.php");
+    int resp = http.GET();
+    String payload = http.getString();
+    Serial.print("Response: "); Serial.println(resp);
+    Serial.print("Payload: "); Serial.println(payload);
 }

@@ -7,6 +7,12 @@
 
 static WiFiManager s_wifiManager;
 
+/*
+!!!
+This application requires the development version of WifiManager!!!
+"""
+*/
+
 static IPAddress local_ip(192, 168, 1, 21);
 static IPAddress gateway(192, 168, 1, 1);
 static IPAddress subnet(255, 255, 255, 0);
@@ -25,7 +31,7 @@ static void onAccessPointCallback(WiFiManager * pManager)
 void app_wifi_setup()
 {
   s_wifiManager.setAPCallback(onAccessPointCallback);
-  s_wifiManager.setSTAStaticIPConfig(local_ip, gateway, subnet);
+  s_wifiManager.setSTAStaticIPConfig(local_ip, gateway, subnet, dns);
 
   s_wifiManager.autoConnect("Cryptology-Laser-AP");
 
@@ -35,6 +41,8 @@ void app_wifi_setup()
   Serial.println(WiFi.localIP());
 
   server_start();
+
+  server_test_connection();
 }
 
 void app_wifi_wipe_credentials()
